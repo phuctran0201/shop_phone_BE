@@ -13,7 +13,7 @@ public class CreateUserRequest {
 
     private String userAuth;
 
-    private int phone;
+    private Integer phone;
 
     private String address;
 

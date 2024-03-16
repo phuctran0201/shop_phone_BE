@@ -25,7 +25,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth;
 
-    private int phone;
+    private Integer phone;
 
     private String address;
 

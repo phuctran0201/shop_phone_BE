@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Service
+
 public interface RefreshTokenService {
     public Optional<RefreshToken> findByToken(String token);
 

@@ -16,7 +16,7 @@ public class ViewUserDTO {
 
     private UserAuth userAuth;
 
-    private int phone;
+    private Integer phone;
 
     private String createdAt;
 

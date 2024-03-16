@@ -49,7 +49,7 @@ public class SecurityConfig   {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.DELETE).hasAuthority("ADMIN")
-                                .requestMatchers("signIn/**","signUp/**","/refreshToken/**").permitAll()
+                                .requestMatchers("signIn/**","signUp/**","/refreshToken/**","/product/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                                 .requestMatchers("/users/**").hasAnyAuthority("USER", "ADMIN")
                                 .anyRequest().authenticated())

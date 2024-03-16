@@ -1,15 +1,12 @@
-package com.pt.entity;
+package com.pt.req;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.Date;
 
 @Data
-@Document(collection = "products")
-public class Product {
-    @Id
-    private String id;
+public class CreateProductRequest {
+
 
     private String name;
 
@@ -33,6 +30,4 @@ public class Product {
 
     private String updatedAt;
 
-
 }
-

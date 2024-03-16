@@ -18,8 +18,9 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class RefreshToken {
+
     @Id
-    private long id;
+    private String id;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")

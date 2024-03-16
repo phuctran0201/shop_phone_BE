@@ -16,7 +16,7 @@ public class UpdateUserRequest {
 
     private UserAuth userAuth;
 
-    private int phone;
+    private Integer phone;
 
     private String address;
 

@@ -29,7 +29,7 @@ public class UserController {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @GetMapping("/users/")
+    @GetMapping("/users")
     public List<ViewUserDTO> getUsers() throws Exception {
         List<ViewUserDTO> viewUserDTOS=this.userService.listUserData();
         return viewUserDTOS;
@@ -42,12 +42,13 @@ public class UserController {
 
     @PostMapping("/signUp")
     public ResponseEntity<?> SignUp(@RequestBody SignUp signUp) throws Exception {
-        return this.userService.signUp(signUp);
+        return ResponseEntity.ok( this.userService.signUp(signUp));
     }
 
     @PostMapping("/signIn")
     public ResponseEntity<?> SignIn(@RequestBody SignIn signIn) throws Exception {
-        return this.userService.signIn(signIn);
+
+        return ResponseEntity.ok( this.userService.signIn(signIn));
     }
     @PutMapping("/users")
     public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest updateUserRequest) throws Exception {
@@ -69,11 +70,11 @@ public class UserController {
     }
     @DeleteMapping(path = "/users/{id}")
     public ResponseEntity<?> deleteUser( @PathVariable String id) throws Exception {
-        return this.userService.deleteUser(id);
+        return ResponseEntity.ok(this.userService.deleteUser(id));
     }
     @GetMapping(path = "/users/detail/{id}")
     public ResponseEntity<?> getDetailUser( @PathVariable String id) throws Exception {
-        return this.userService.userDetail(id);
+        return ResponseEntity.ok(this.userService.userDetail(id));
     }
     @PostMapping("/refreshToken")
     public TokenRefreshDTO refreshToken(@RequestBody TokenRefreshRequest tokenRefreshRequest) {

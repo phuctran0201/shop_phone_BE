@@ -32,7 +32,7 @@ public class RefreshTokenImpl implements RefreshTokenService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(userRepository.findByEmail(email).get())
                 .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(3600000))
+                .expiryDate(Instant.now().plusMillis(360000000))
                 .build();
         return refreshTokenRepository.save(refreshToken);
     }

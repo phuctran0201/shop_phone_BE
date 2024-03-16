@@ -4,6 +4,7 @@ import com.pt.DTO.TokenRefreshDTO;
 import com.pt.DTO.ViewUserDTO;
 import com.pt.configSecurity.UserDetailsImpl;
 import com.pt.configSecurity.jwt.ConfigJwtUtils;
+import com.pt.entity.Product;
 import com.pt.entity.RefreshToken;
 import com.pt.entity.User;
 import com.pt.exceptionMessage.MessageResponse;
@@ -181,10 +182,10 @@ public class UserServiceImpl implements UserService {
                 errorResponse.setStatus("ERR");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
-
-            User user = modelMapper.map(updateUserRequest, User.class);
-            user.setCreatedAt(checkUser.get().getCreatedAt());
-            userRepository.save(user);
+            User existingUser = checkUser.get();
+            modelMapper.getConfiguration().setSkipNullEnabled(true);
+            modelMapper.map(updateUserRequest, existingUser);
+            userRepository.save(existingUser);
             MessageResponse successResponse = new MessageResponse();
             successResponse.setMessage("User updated successfully");
             successResponse.setStatus("OK");

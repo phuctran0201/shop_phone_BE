@@ -1,14 +1,11 @@
-package com.pt.entity;
+package com.pt.DTO;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.Date;
 
 @Data
-@Document(collection = "products")
-public class Product {
-    @Id
+public class ViewProductDTO {
     private String id;
 
     private String name;
@@ -32,7 +29,4 @@ public class Product {
     private String createdAt;
 
     private String updatedAt;
-
-
 }
-
