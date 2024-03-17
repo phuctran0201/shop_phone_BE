@@ -1,5 +1,6 @@
 package com.pt.service.impl;
 
+import com.pt.DTO.ResponseDTO;
 import com.pt.DTO.ViewProductDTO;
 import com.pt.DTO.ViewUserDTO;
 import com.pt.entity.Product;
@@ -11,6 +12,9 @@ import com.pt.req.UpdateProductRequest;
 import com.pt.service.ProductService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.spi.ErrorMessage;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -158,4 +162,67 @@ public class ProductServiceImpl implements ProductService {
             );
         }
     }
+
+    @Override
+    public ResponseEntity<?> listProductPagination(Pageable pageable) {
+        try {
+            return generateResponse(productRepository.findAll(pageable));
+        } catch (DataAccessException e) {
+            return handleException("An error occurred during listing products", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> filterProductName(String name, Pageable pageable) {
+        try {
+            if (name == null) {
+                return ResponseEntity.badRequest().body("Name cannot be null");
+            }
+            return generateResponse(productRepository.findAllByNameIgnoreCaseContaining(name, pageable));
+        } catch (DataAccessException e) {
+            return handleException("An error occurred during filtering products by name", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> filterProductType(String type, Pageable pageable) {
+        try {
+            if (type == null) {
+                return ResponseEntity.badRequest().body("Type cannot be null");
+            }
+            return generateResponse(productRepository.findAllByTypeIgnoreCaseContaining(type, pageable));
+        } catch (DataAccessException e) {
+            return handleException("An error occurred during filtering products by type", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> filterProductPrice(Double price, Pageable pageable) {
+        try {
+            if (price == null) {
+                return ResponseEntity.badRequest().body("Price cannot be null");
+            }
+            return generateResponse(productRepository.findAllByPrice(price, pageable));
+        } catch (DataAccessException e) {
+            return handleException("An error occurred during filtering products by price", e);
+        }
+    }
+
+
+    // ktra phân trang
+    private ResponseEntity<?> generateResponse(Page<Product> pageProducts) {
+        List<Product> products = pageProducts.getContent();
+        Integer page = pageProducts.getNumber();
+        Integer totalPage = pageProducts.getTotalPages();
+        Long totalCount = pageProducts.getTotalElements();
+        Integer count = products.size();
+        ResponseDTO responseDTO = new ResponseDTO(count, page, totalPage, totalCount, products);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    private ResponseEntity<?> handleException(String message, DataAccessException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorMessage(message));
+    }
+
 }
