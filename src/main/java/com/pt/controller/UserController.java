@@ -7,6 +7,9 @@ import com.pt.entity.RefreshToken;
 import com.pt.req.*;
 import com.pt.service.RefreshTokenService;
 import com.pt.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@CrossOrigin(value = "*")
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -36,8 +40,8 @@ public class UserController {
     }
     @PostMapping("/users")
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest userRequest) throws Exception {
-        this.userService.createUser(userRequest);
-        return new ResponseEntity<>("add user successfully", HttpStatus.OK);
+
+        return ResponseEntity.ok(this.userService.createUser(userRequest));
     }
 
     @PostMapping("/signUp")
@@ -46,9 +50,9 @@ public class UserController {
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<?> SignIn(@RequestBody SignIn signIn) throws Exception {
+    public ResponseEntity<?> SignIn(@RequestBody SignIn signIn, HttpServletResponse response) throws Exception {
 
-        return ResponseEntity.ok( this.userService.signIn(signIn));
+        return ResponseEntity.ok( this.userService.signIn(signIn,response));
     }
     @PutMapping("/users")
     public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest updateUserRequest) throws Exception {
@@ -57,12 +61,11 @@ public class UserController {
         LocalDateTime current = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         String formatted = current.format(formatter);
-        String encodedPassword = passwordEncoder.encode(updateUserRequest.getPassword());
-
         updateUser.setEmail(updateUserRequest.getEmail());
         updateUser.setId(updateUserRequest.getId());
         updateUser.setName(updateUserRequest.getName());
-        updateUser.setPassword(encodedPassword);
+        updateUser.setAddress(updateUserRequest.getAddress());
+        updateUser.setAvatar(updateUserRequest.getAvatar());
         updateUser.setUserAuth(updateUserRequest.getUserAuth());
         updateUser.setPhone(updateUserRequest.getPhone());
         updateUser.setUpdatedAt(formatted);
@@ -77,22 +80,46 @@ public class UserController {
         return ResponseEntity.ok(this.userService.userDetail(id));
     }
     @PostMapping("/refreshToken")
-    public TokenRefreshDTO refreshToken(@RequestBody TokenRefreshRequest tokenRefreshRequest) {
-        return refreshTokenService.findByToken(tokenRefreshRequest.getToken())
+    public TokenRefreshDTO refreshToken(HttpServletRequest request, @RequestBody(required = false) TokenRefreshRequest tokenRefreshRequest ) {
+        // Get the token from the cookie
+
+        String refreshToken = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("token")) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (refreshToken == null) {
+            throw new RuntimeException("Refresh token is not found in the cookie!");
+        }
+
+
+
+        String finalRefreshToken = refreshToken;
+        return refreshTokenService.findByToken(refreshToken)
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(userInfo -> {
                     String accessToken = JwtUtils.generateToken(userInfo.getEmail(), userInfo.getId());
                     return TokenRefreshDTO.builder()
                             .accessToken(accessToken)
-                            .token(tokenRefreshRequest.getToken())
+                            .token(finalRefreshToken)
                             .build();
                 }).orElseThrow(() -> new RuntimeException(
-                        "Refresh token is not in database!"));
+                        "Refresh token is not in the database!"));
     }
 
-    @PostMapping("/signout")
-    public ResponseEntity<?> logoutUser() throws Exception {
-        return this.userService.logoutUser();
+    @PostMapping("/signOut")
+    public ResponseEntity<?> logoutUser(HttpServletResponse response) throws Exception {
+        return this.userService.logoutUser(response);
+    }
+
+    @PostMapping("/users/deleteMany")
+    public ResponseEntity<?> deleteManyProduct( @RequestBody IdsRequest ids) throws Exception {
+        return ResponseEntity.ok( this.userService.deleteMany(ids));
     }
 }

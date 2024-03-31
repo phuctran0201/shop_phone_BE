@@ -1,5 +1,6 @@
 package com.pt.service.impl;
 
+import com.pt.Cokkie.CookieManager;
 import com.pt.DTO.TokenRefreshDTO;
 import com.pt.DTO.ViewUserDTO;
 import com.pt.configSecurity.UserDetailsImpl;
@@ -7,14 +8,16 @@ import com.pt.configSecurity.jwt.ConfigJwtUtils;
 import com.pt.entity.Product;
 import com.pt.entity.RefreshToken;
 import com.pt.entity.User;
+import com.pt.enums.UserAuth;
 import com.pt.exceptionMessage.MessageResponse;
 import com.pt.repository.UserRepository;
-import com.pt.req.SignIn;
-import com.pt.req.SignUp;
-import com.pt.req.CreateUserRequest;
-import com.pt.req.UpdateUserRequest;
+import com.pt.req.*;
 import com.pt.service.RefreshTokenService;
 import com.pt.service.UserService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.spi.ErrorMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,10 +76,53 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void createUser(CreateUserRequest userRequest) throws Exception {
-        User user=modelMapper.map(userRequest,User.class);
-        userRepository.save(user);
+    public ResponseEntity<?> createUser(CreateUserRequest userRequest) throws Exception {
+        try {
+            Optional<User> checkUser = userRepository.findByEmail(userRequest.getEmail());
+
+            Pattern pattern = Pattern.compile("^\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$");
+            Matcher matcher = pattern.matcher(userRequest.getEmail());
+            boolean isCheckEmail = matcher.matches();
+            MessageResponse errorResponse = new MessageResponse();
+            if (userRequest.getEmail() == null || userRequest.getName() == null || userRequest.getPassword() == null || userRequest.getUserAuth() == null) {
+                errorResponse.setMessage("The input is required");
+                errorResponse.setStatus("ERR");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            } else if (!isCheckEmail) {
+                errorResponse.setMessage("The input is email");
+                errorResponse.setStatus("ERR");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            } else if (checkUser.isPresent()) {
+                errorResponse.setMessage("email is already");
+                errorResponse.setStatus("ERR");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+
+
+            User user = modelMapper.map(userRequest, User.class);
+            LocalDateTime current = LocalDateTime.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+            String formatted = current.format(formatter);
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
+            user.setCreatedAt(formatted);
+            user.setUpdatedAt(formatted);
+            userRepository.save(user);
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessage("Create user successfully");
+            messageResponse.setStatus("OK");
+            return ResponseEntity.ok(messageResponse);
+        } catch (Exception e) {
+
+            return ResponseEntity.status(500).body(
+                    new ErrorMessage("An error occurred during create user")
+            );
+        }
     }
+
+
 
     @Override
     public ResponseEntity<?> signUp(SignUp signUp) {
@@ -84,8 +130,8 @@ public class UserServiceImpl implements UserService {
             String name = signUp.getName();
             String email = signUp.getEmail();
             String password = signUp.getPassword();
-            Integer phone = signUp.getPhone();
-            String userAuth = signUp.getUserAuth();
+            String confirmPassword = signUp.getConfirmPassword();
+            UserAuth userAuth =UserAuth.USER;
 
             Optional<User> checkUser=userRepository.findByEmail(email);
 
@@ -93,7 +139,7 @@ public class UserServiceImpl implements UserService {
             Matcher matcher = pattern.matcher(email);
             boolean isCheckEmail = matcher.matches();
             MessageResponse errorResponse = new MessageResponse();
-            if (name == null || email == null || password == null || phone == null || userAuth==null) {
+            if (name == null || email == null || password == null || userAuth==null) {
                 errorResponse.setMessage("The input is required");
                 errorResponse.setStatus("ERR");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -103,6 +149,11 @@ public class UserServiceImpl implements UserService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }else if (checkUser.isPresent()){
                 errorResponse.setMessage("email is already");
+                errorResponse.setStatus("ERR");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            else if (!password.equals(confirmPassword)){
+                errorResponse.setMessage("confirm Password Not Correct");
                 errorResponse.setStatus("ERR");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
@@ -117,9 +168,12 @@ public class UserServiceImpl implements UserService {
             user.setPassword(encodedPassword);
             user.setCreatedAt(formatted);
             user.setUpdatedAt(formatted);
-
+            user.setUserAuth(userAuth);
             userRepository.save(user);
-            return ResponseEntity.ok("User signed up successfully");
+            MessageResponse messageResponse = new MessageResponse();
+            messageResponse.setMessage("User signed up successfully");
+            messageResponse.setStatus("OK");
+            return ResponseEntity.ok(messageResponse);
         } catch (Exception e) {
 
             return ResponseEntity.status(500).body(
@@ -130,7 +184,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ResponseEntity<?> signIn(SignIn signIn) {
+    public ResponseEntity<?> signIn(SignIn signIn,HttpServletResponse response) {
         try {
             String email = signIn.getEmail();
             String password = signIn.getPassword();
@@ -164,6 +218,9 @@ public class UserServiceImpl implements UserService {
             TokenRefreshDTO token =new TokenRefreshDTO();
             token.setAccessToken(jwtUtils.generateToken(foundUser.getEmail(), foundUser.getId()));
             token.setToken(refreshToken.getToken());
+
+            CookieManager.addTokenCookie(response, token.getToken());
+
             return ResponseEntity.ok(token);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
@@ -230,7 +287,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<?> userDetail(String id) throws Exception {
         try {
-            Optional<User> checkUser=userRepository.findById(id);
+                Optional<User> checkUser=userRepository.findById(id);
             if (checkUser.isEmpty()) {
                 MessageResponse errorResponse = new MessageResponse();
                 errorResponse.setMessage("Invalid id");
@@ -252,7 +309,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> logoutUser() throws Exception {
+    public ResponseEntity<?> logoutUser(HttpServletResponse response) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> userOptional = userRepository.findByEmail(authentication.getName());
 
@@ -260,6 +317,7 @@ public class UserServiceImpl implements UserService {
             User user = userOptional.get();
             String userId = user.getId();
             refreshTokenService.deleteByUserId(userId);
+            CookieManager.deleteCookie(response);
             MessageResponse successResponse = new MessageResponse();
             successResponse.setMessage("LOG OUT SUCCESSFULLY");
             successResponse.setStatus("OK");
@@ -267,8 +325,32 @@ public class UserServiceImpl implements UserService {
         } else {
             MessageResponse errorResponse = new MessageResponse();
             errorResponse.setMessage("User not found");
-            errorResponse.setStatus("ERROR");
+            errorResponse.setStatus("ERR");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> deleteMany(IdsRequest ids) throws Exception {
+        try {
+            List<String> idList = ids.getIds();
+            for (String id : idList) {
+                if (!userRepository.existsById(id)) {
+                    MessageResponse errorResponse = new MessageResponse();
+                    errorResponse.setMessage("Invalid id " );
+                    errorResponse.setStatus("ERR");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                }
+            }
+
+            userRepository.deleteAllById(idList);
+            MessageResponse successResponse = new MessageResponse();
+            successResponse.setMessage("Deleted many users successfully");
+            successResponse.setStatus("OK");
+            return ResponseEntity.ok(successResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorMessage("An error occurred during deleting many users"));
         }
     }
 

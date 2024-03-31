@@ -1,6 +1,7 @@
 package com.pt.configSecurity;
 
 import com.pt.configSecurity.jwt.RequestFilter;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,14 +49,21 @@ public class SecurityConfig   {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
-                        authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.DELETE).hasAuthority("ADMIN")
-                                .requestMatchers("signIn/**","signUp/**","/refreshToken/**","/product/**").permitAll()
+                        authorizationManagerRequestMatcherRegistry
+                                .requestMatchers(HttpMethod.GET,"/products/**").permitAll()
+                                .requestMatchers(HttpMethod.DELETE).hasAuthority("ADMIN")
+                                .requestMatchers("/signIn/**","/signUp/**","/refreshToken/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                                .requestMatchers("/users/**").hasAnyAuthority("USER", "ADMIN")
-                                .anyRequest().authenticated())
+                                .requestMatchers("/users/**","/products/**").hasAnyAuthority("USER", "ADMIN")
+                                .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
                 http.addFilterBefore(requestFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http
+//                .logout(logout -> logout
+//                        .logoutUrl("/signOut").invalidateHttpSession(true).deleteCookies("token")
+//
+//                );
         return http.build();
     }
     @Bean

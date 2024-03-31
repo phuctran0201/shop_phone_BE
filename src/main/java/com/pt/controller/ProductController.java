@@ -3,10 +3,7 @@ package com.pt.controller;
 import com.pt.DTO.ViewProductDTO;
 import com.pt.DTO.ViewUserDTO;
 import com.pt.entity.Product;
-import com.pt.req.CreateProductRequest;
-import com.pt.req.CreateUserRequest;
-import com.pt.req.UpdateProductRequest;
-import com.pt.req.UpdateUserRequest;
+import com.pt.req.*;
 import com.pt.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -20,9 +17,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@CrossOrigin(value = "*")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/product")
+@RequestMapping("/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -92,5 +90,8 @@ public class ProductController {
     }
 
 
-
+    @PostMapping("/deleteMany")
+    public ResponseEntity<?> deleteManyProduct( @RequestBody IdsRequest ids) throws Exception {
+        return ResponseEntity.ok( this.productService.deleteMany(ids));
+    }
 }

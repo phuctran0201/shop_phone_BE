@@ -2,12 +2,11 @@ package com.pt.service.impl;
 
 import com.pt.DTO.ResponseDTO;
 import com.pt.DTO.ViewProductDTO;
-import com.pt.DTO.ViewUserDTO;
 import com.pt.entity.Product;
-import com.pt.entity.User;
 import com.pt.exceptionMessage.MessageResponse;
 import com.pt.repository.ProductRepository;
 import com.pt.req.CreateProductRequest;
+import com.pt.req.IdsRequest;
 import com.pt.req.UpdateProductRequest;
 import com.pt.service.ProductService;
 import org.modelmapper.ModelMapper;
@@ -207,6 +206,31 @@ public class ProductServiceImpl implements ProductService {
             return handleException("An error occurred during filtering products by price", e);
         }
     }
+
+    @Override
+    public ResponseEntity<?> deleteMany(IdsRequest ids) {
+        try {
+            List<String> idList = ids.getIds();
+            for (String id : idList) {
+                if (!productRepository.existsById(id)) {
+                    MessageResponse errorResponse = new MessageResponse();
+                    errorResponse.setMessage("Invalid id" );
+                    errorResponse.setStatus("ERR");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                }
+            }
+
+            productRepository.deleteAllById(idList);
+            MessageResponse successResponse = new MessageResponse();
+            successResponse.setMessage("Deleted many products successfully");
+            successResponse.setStatus("OK");
+            return ResponseEntity.ok(successResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorMessage("An error occurred during deleting many products"));
+        }
+    }
+
 
 
     // ktra phân trang

@@ -10,6 +10,8 @@ public class SignUp {
 
     private String password;
 
+    private String confirmPassword;
+
     private String userAuth;
 
     private int phone;

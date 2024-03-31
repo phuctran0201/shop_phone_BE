@@ -18,6 +18,10 @@ public class ViewUserDTO {
 
     private Integer phone;
 
+    private String address;
+
+    private String avatar;
+
     private String createdAt;
 
     private String updatedAt;

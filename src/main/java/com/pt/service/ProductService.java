@@ -1,11 +1,9 @@
 package com.pt.service;
 
 import com.pt.DTO.ViewProductDTO;
-import com.pt.DTO.ViewUserDTO;
 import com.pt.req.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -28,5 +26,7 @@ public interface ProductService {
     public ResponseEntity<?> filterProductType(String type,Pageable pageable) throws Exception;
 
     public ResponseEntity<?> filterProductPrice(Double price,Pageable pageable) throws Exception;
+
+    public ResponseEntity<?> deleteMany(IdsRequest ids) throws Exception;
 
 }
