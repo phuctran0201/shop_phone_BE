@@ -1,19 +1,15 @@
-package com.pt.entity;
+package com.pt.DTO;
 
+import com.pt.entity.OrderItem;
+import com.pt.entity.ShippingAddress;
+import com.pt.entity.User;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Date;
 import java.util.List;
 
 @Data
-@RequiredArgsConstructor
-@Document(collection = "orders")
-public class Order {
-    @Id
+public class ViewOrderDTO {
     private String id;
 
     private List<OrderItem> orderItems;
@@ -30,13 +26,13 @@ public class Order {
 
     private String user;
 
-    private String email;
-
     private Boolean isPaid;
+
+    private String email;
 
     private Date paidAt;
 
-    private Boolean isDelivered;
+    private boolean isDelivered;
 
     private Date deliveredAt;
 
@@ -44,4 +40,3 @@ public class Order {
 
     private String updatedAt;
 }
-

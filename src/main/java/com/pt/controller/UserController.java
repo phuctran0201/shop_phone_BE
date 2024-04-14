@@ -65,9 +65,11 @@ public class UserController {
         updateUser.setId(updateUserRequest.getId());
         updateUser.setName(updateUserRequest.getName());
         updateUser.setAddress(updateUserRequest.getAddress());
+        updateUser.setPassword(updateUserRequest.getPassword());
         updateUser.setAvatar(updateUserRequest.getAvatar());
         updateUser.setUserAuth(updateUserRequest.getUserAuth());
         updateUser.setPhone(updateUserRequest.getPhone());
+        updateUser.setCity(updateUserRequest.getCity());
         updateUser.setUpdatedAt(formatted);
         return ResponseEntity.ok(this.userService.updateUser(updateUser));
     }

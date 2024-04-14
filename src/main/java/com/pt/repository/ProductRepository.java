@@ -1,5 +1,6 @@
 package com.pt.repository;
 
+import com.pt.entity.Order;
 import com.pt.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public interface ProductRepository extends MongoRepository<Product,String> {
@@ -22,5 +24,14 @@ public interface ProductRepository extends MongoRepository<Product,String> {
 
     Page<Product> findAllByPrice(Double price,Pageable pageable);
 
+    List<Product> findAll();
+
+    default List<String> getAllTypes() {
+        List<Product> allProducts = findAll();
+        return allProducts.stream()
+                .map(Product::getType)
+                .distinct()
+                .collect(Collectors.toList());
+    }
 
 }

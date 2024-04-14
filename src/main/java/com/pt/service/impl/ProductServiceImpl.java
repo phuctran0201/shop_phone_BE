@@ -157,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
 
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
-                    new ErrorMessage( "An error occurred during delete Product")
+                    new ErrorMessage( "An error occurred during get details Product")
             );
         }
     }
@@ -204,6 +204,23 @@ public class ProductServiceImpl implements ProductService {
             return generateResponse(productRepository.findAllByPrice(price, pageable));
         } catch (DataAccessException e) {
             return handleException("An error occurred during filtering products by price", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getTypeProduct() throws Exception {
+        try {
+            List<Product> products = productRepository.findAll();
+            List<String> type = products.stream()
+                    .map(Product::getType)
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (type.isEmpty()) {
+                return ResponseEntity.badRequest().body("Do not have type");
+            }
+            return ResponseEntity.ok(type);
+        } catch (DataAccessException e) {
+            return handleException("An error occurred during get type", e);
         }
     }
 

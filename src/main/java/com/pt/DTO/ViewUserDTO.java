@@ -22,6 +22,8 @@ public class ViewUserDTO {
 
     private String avatar;
 
+    private String city;
+
     private String createdAt;
 
     private String updatedAt;

@@ -94,4 +94,8 @@ public class ProductController {
     public ResponseEntity<?> deleteManyProduct( @RequestBody IdsRequest ids) throws Exception {
         return ResponseEntity.ok( this.productService.deleteMany(ids));
     }
+    @GetMapping("/getTypeProduct")
+    public ResponseEntity<?> getTypeProduct( ) throws Exception {
+        return ResponseEntity.ok( this.productService.getTypeProduct());
+    }
 }

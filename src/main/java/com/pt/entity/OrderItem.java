@@ -2,18 +2,25 @@ package com.pt.entity;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "orderItem")
+import java.util.Date;
+
+
 @Data
 public class OrderItem {
 
-    private String id;
+    private String name;
 
-    private Long amount;
+    private Integer amount;
 
     private String image;
 
-    private double price;
+    private Double price;
 
-    private double discount;
+    private Double discount;
+
+    private String product;
+
+
 }

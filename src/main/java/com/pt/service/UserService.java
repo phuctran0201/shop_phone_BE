@@ -29,4 +29,6 @@ public interface UserService {
     public ResponseEntity<?> logoutUser(HttpServletResponse response) throws Exception;
 
     public ResponseEntity<?> deleteMany(IdsRequest ids) throws Exception;
+
+
 }

@@ -54,7 +54,7 @@ public class SecurityConfig   {
                                 .requestMatchers(HttpMethod.DELETE).hasAuthority("ADMIN")
                                 .requestMatchers("/signIn/**","/signUp/**","/refreshToken/**").permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                                .requestMatchers("/users/**","/products/**").hasAnyAuthority("USER", "ADMIN")
+                                .requestMatchers("/users/**","/products/**","/orders/**").hasAnyAuthority("USER", "ADMIN")
                                 .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

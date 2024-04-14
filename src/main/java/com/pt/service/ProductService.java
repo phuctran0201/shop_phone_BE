@@ -27,6 +27,8 @@ public interface ProductService {
 
     public ResponseEntity<?> filterProductPrice(Double price,Pageable pageable) throws Exception;
 
+    public  ResponseEntity<?> getTypeProduct() throws Exception;
+
     public ResponseEntity<?> deleteMany(IdsRequest ids) throws Exception;
 
 }

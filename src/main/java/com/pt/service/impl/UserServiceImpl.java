@@ -239,6 +239,9 @@ public class UserServiceImpl implements UserService {
                 errorResponse.setStatus("ERR");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
+            if(updateUserRequest.getPassword()!=null){
+                updateUserRequest.setPassword(passwordEncoder.encode(updateUserRequest.getPassword()));
+            }
             User existingUser = checkUser.get();
             modelMapper.getConfiguration().setSkipNullEnabled(true);
             modelMapper.map(updateUserRequest, existingUser);
@@ -353,6 +356,8 @@ public class UserServiceImpl implements UserService {
                     .body(new ErrorMessage("An error occurred during deleting many users"));
         }
     }
+
+
 
 
 }
